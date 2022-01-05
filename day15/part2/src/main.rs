@@ -39,115 +39,68 @@ fn main() -> std::io::Result<()> {
         }
     }
 
-    // println!("data {:?}", data);
-
-    // TODO: prob need to implement Dijkstra's algorithm
     // (risk, visited)
     let mut risk: Vec<Vec<(i64, bool)>> = vec![vec![(std::i64::MAX, false); data[0].len()]; data.len()];
-    let mut prev: Vec<Vec<(i64, i64)>> = vec![vec![(-1, -1); data[0].len()]; data.len()];
 
     // risk[0][0] = data[0][0];
     risk[0][0].0 = 0;
 
     while risk.iter().flatten().any(|x: &(i64, bool)| x.1 == false) {
-        // println!("HERE");
         // find min dist of the not visited
         let mut min: i64 = std::i64::MAX;
-        let mut minIdx: (usize, usize) = (0, 0);
+        let mut min_idx: (usize, usize) = (0, 0);
         for i in 0..data.len() {
             for j in 0..data[i].len() {
                 if risk[i][j].1 == false && risk[i][j].0 < min {
                     min = risk[i][j].0;
-                    minIdx.0 = i;
-                    minIdx.1 = j;
+                    min_idx.0 = i;
+                    min_idx.1 = j;
                 }
             }
         }
 
 
-        let i = minIdx.0;
-        let j = minIdx.1;
+        let i = min_idx.0;
+        let j = min_idx.1;
         risk[i][j].1 = true;
-        // println!("{} {}", i, j);
+
         // top cell
         if i > 0 {
             if risk[i-1][j].1 == false {
-                let newDist = risk[i][j].0 + data[i-1][j];
-                if newDist < risk[i-1][j].0 {
-                    risk[i-1][j].0 = newDist;
+                let new_dist = risk[i][j].0 + data[i-1][j];
+                if new_dist < risk[i-1][j].0 {
+                    risk[i-1][j].0 = new_dist;
                 }
             }
         }
         // bottom cell
         if i < data.len()-1 {
             if risk[i+1][j].1 == false {
-                let newDist = risk[i][j].0 + data[i+1][j];
-                if newDist < risk[i+1][j].0 {
-                    risk[i+1][j].0 = newDist;
+                let new_dist = risk[i][j].0 + data[i+1][j];
+                if new_dist < risk[i+1][j].0 {
+                    risk[i+1][j].0 = new_dist;
                 }
             }
         }
         // left cell
         if j > 0 {
             if risk[i][j-1].1 == false {
-                let newDist = risk[i][j].0 + data[i][j-1];
-                if newDist < risk[i][j-1].0 {
-                    risk[i][j-1].0 = newDist;
+                let new_dist = risk[i][j].0 + data[i][j-1];
+                if new_dist < risk[i][j-1].0 {
+                    risk[i][j-1].0 = new_dist;
                 }
             }
         }
         // right cell
         if j < data[0].len()-1 {
             if risk[i][j+1].1 == false {
-                let newDist = risk[i][j].0 + data[i][j+1];
-                if newDist < risk[i][j+1].0 {
-                    risk[i][j+1].0 = newDist;
+                let new_dist = risk[i][j].0 + data[i][j+1];
+                if new_dist < risk[i][j+1].0 {
+                    risk[i][j+1].0 = new_dist;
                 }
             }
         }
     }
-
-
-
-    /*
-    // for i in 1..=cmp::max(data.len(), data[0].len()) {
-    'outer: for i in 1.. {
-        // walk diagonally
-        for j in 0..=i {
-            // each iter we check the [j][i-j] cell
-            // check the adjacent cells and update the risk
-
-            if j >= data.len() || i-j >= data[0].len(){
-                continue;
-            }
-
-            // println!("{} {}", j, i-j);
-
-            // left cell
-            if i-j > 0 {
-                if risk[j][i-j] == -1 {
-                    risk[j][i-j] = risk[j][i-j-1] + data[j][i-j];
-                } else if risk[j][i-j-1] + data[j][i-j] < risk[j][i-j] {
-                    risk[j][i-j] = risk[j][i-j-1] + data[j][i-j];
-                }
-            }
-
-            // top cell
-            if j > 0 {
-                if risk[j][i-j] == -1 {
-                    risk[j][i-j] = risk[j-1][i-j] + data[j][i-j];
-                } else if risk[j-1][i-j] + data[j][i-j] < risk[j][i-j] {
-                    risk[j][i-j] = risk[j-1][i-j] + data[j][i-j];
-                }
-            }
-            if j == data.len() - 1 && i-j == data[0].len() - 1 {
-                break 'outer;
-            }
-        }
-    }
-    */
-
-    // println!("risk {:#?}", risk);
 
     println!("Result: {}", risk[data.len()-1][data[0].len()-1].0);
 
