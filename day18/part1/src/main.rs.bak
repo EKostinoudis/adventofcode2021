@@ -1,0 +1,100 @@
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::rc::Rc;
+
+#[derive(Debug, Clone)]
+enum Cell {
+    Value(u8),
+    Pair(Rc<Pair>),
+}
+
+impl Cell {
+    fn pair(self) -> Pair {
+        if let Cell::Pair(c) = self { Rc::try_unwrap(c).unwrap() } else { panic!("Not a pair") }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Pair {
+    left: Rc<Cell>,
+    right: Rc<Cell>,
+}
+
+impl Pair {
+    fn new(left: Cell, right: Cell) -> Pair {
+        Pair{
+            left: Rc::new(left), 
+            right: Rc::new(right),
+        }
+    }
+
+    fn add_pairs(left: &Rc<Pair>, right: &Rc<Pair>) -> Pair {
+        Pair::new(
+            Cell::Pair(Rc::clone(left)), 
+            Cell::Pair(Rc::clone(right))
+            )
+    }
+
+    /*
+    fn reduce(&mut self, depth: u32) {
+        let mut left = &*self.left;
+        match left {
+            Cell::Pair(x) => {
+                (*x).borrow_mut().reduce(depth+1)
+            },
+            _ => (),
+        }
+    }
+    */
+}
+
+fn create_pair(str: &str) -> (Cell, usize) {
+    let left: Cell;
+    let right: Cell;
+    let mut tup: (Cell, usize);
+    let mut offset: usize;
+
+    match str.chars().nth(0).unwrap() {
+        '[' => tup = create_pair(&str[1..]),
+        c if c.is_ascii_digit() => return (Cell::Value(c.to_digit(10).unwrap() as u8), 1),
+        _ => panic!(),
+    }
+    left = tup.0;
+    offset = tup.1;
+
+    match str.chars().nth(offset+1).unwrap() {
+        ',' => tup = create_pair(&str[offset+2..]),
+        _ => panic!(),
+    }
+    right = tup.0;
+    offset += tup.1;
+
+    (Cell::Pair(Rc::new(Pair::new(left, right))), offset+3)
+}
+
+
+fn main() -> std::io::Result<()> {
+    let file = File::open("input.txt")?;
+    let lines = io::BufReader::new(file).lines();
+    let mut data: Vec<Rc<Pair>> = Vec::new();
+
+    for line in lines {
+        let line = line.unwrap();
+        let tup = create_pair(&line);
+        data.push(Rc::new(tup.0.pair()));
+    }
+
+    let ref l = data[0];
+    let ref r = data[1];
+    let mut new_pair = Pair::add_pairs(l, r);
+
+    // new_pair.reduce(0);
+
+    println!("{:#?}", new_pair);
+    
+
+    // println!("Result: {}", res.0);
+
+    Ok(())
+}
+
